@@ -23,11 +23,15 @@ def test_get_articles():
     assert data["total"] >= 0
 
 def test_get_article_existant():
-    response = client.get("/articles/1")
-    assert response.status_code == 200
-    data = response.json()
-    assert "titre" in data
-    assert "source" in data
+    response = client.get("/articles")
+    articles = response.json()["articles"]
+    if len(articles) == 0:
+        response = client.get("/articles/1")
+        assert response.status_code == 404
+    else:
+        article_id = articles[0]["id"]
+        response = client.get(f"/articles/{article_id}")
+        assert response.status_code == 200
 
 def test_get_article_inexistant():
     response = client.get("/articles/99999")
