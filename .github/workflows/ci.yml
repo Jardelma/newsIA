@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Récupérer le code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Installer Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
@@ -24,6 +24,9 @@ jobs:
 
       - name: Créer le fichier .env de test
         run: echo "HF_TOKEN=test_token" > .env
+
+      - name: Créer le dossier data
+        run: mkdir -p data
 
       - name: Créer la base de données de test
         run: python scripts/database.py
