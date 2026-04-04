@@ -1,8 +1,13 @@
+import time
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from scripts.monitoring import log_requete, log_ia
 from fastapi import FastAPI, HTTPException
 import sqlite3
 import requests
 import os
 from dotenv import load_dotenv
+
 
 load_dotenv()
 
@@ -16,6 +21,16 @@ app = FastAPI(
     description="API de gestion d'articles sur l'intelligence artificielle",
     version="1.0.0"
 )
+
+from fastapi import Request
+
+@app.middleware("http")
+async def monitoring_middleware(request: Request, call_next):
+    debut = time.time()
+    response = await call_next(request)
+    temps_ms = int((time.time() - debut) * 1000)
+    log_requete(str(request.url.path), response.status_code, temps_ms)
+    return response
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -61,7 +76,10 @@ def get_article(article_id: int):
     return dict(article)
 
 @app.get("/articles/recherche/{mot_cle}")
+@app.get("/articles/recherche/{mot_cle}")
 def rechercher_articles(mot_cle: str):
+    if len(mot_cle) < 2:
+        raise HTTPException(status_code=400, detail="Mot-clé trop court")
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM articles WHERE titre LIKE ?", (f"%{mot_cle}%",))
