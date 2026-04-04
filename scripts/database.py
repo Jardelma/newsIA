@@ -22,6 +22,9 @@ def creer_base():
 
 def importer_articles(nom_fichier):
     chemin = f"data/{nom_fichier}.json"
+    if not os.path.exists(chemin):
+        print(f"Fichier {chemin} non trouvé, import ignoré")
+        return
     with open(chemin, "r", encoding="utf-8") as f:
         articles = json.load(f)
     conn = sqlite3.connect(DB_PATH)
